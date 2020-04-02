@@ -1,3 +1,5 @@
+package SimpleBankingApp;
+
 import java.util.Scanner;
 import java.util.InputMismatchException;
 import java.util.Random;
@@ -5,9 +7,12 @@ import java.util.Random;
 public class BankingApp {
 
 	public static void main(String[] args) {
+		// create scanner for user input
 		Scanner nameScan = new Scanner(System.in);
 		System.out.println("Please Enter Your Name: ");
+		// store input into name variable
 		String name = nameScan.next();
+		// create a random id number
 		Random rand = new Random();
 		int newID = rand.nextInt(1000);
 		BankAccount bankAcc = new BankAccount(name, Integer.toString(newID));
@@ -17,13 +22,15 @@ public class BankingApp {
 
 }
 
-
+// Bank account class
 class BankAccount{
+	// class variables
 	int balance;
 	int prevTransaction;
 	String customerName;
 	String customerID;
 	
+	// class constructor
 	BankAccount(String custName, String custID){
 		customerName = custName;
 		customerID = custID;
@@ -119,6 +126,7 @@ class BankAccount{
 					
 				case 'E':
 					System.out.println("--------------------------");
+					break;
 					
 				default:
 					System.out.println("Invalid Option, Enter Another Option");
