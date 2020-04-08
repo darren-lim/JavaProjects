@@ -8,5 +8,7 @@ module JavaProjects {
 	requires javafx.swt;
 	requires javafx.web;
 	requires java.desktop;
+	requires org.junit.jupiter.api;
+	requires junit;
 	exports JavaFXlearn;
 }
