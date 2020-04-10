@@ -20,6 +20,7 @@ import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JFrame;
 import javax.swing.JPanel;
+import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
@@ -50,14 +51,14 @@ public class PostIt {
 	public PostIt() {
 		f = new JFrame("TestFrame");
 		Colors color = new Colors();
-		layout = new BorderLayout(0, 20);
+		layout = new BorderLayout(0, 10);
 		f.setLayout(layout);
 		f.setSize(300, 400);// 400 width and 500 height
 		f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 		f.getContentPane().setBackground(color.yellow);
 
 		textFieldPanel = new JPanel();
-		textFieldPanel.setLayout(new CardLayout(20, 0));
+		textFieldPanel.setLayout(new CardLayout(15, 10));
 
 		String readText = "";
 		// later on check multiple files in directory
@@ -99,7 +100,9 @@ public class PostIt {
 		addColorButtons(color, area);
 		buttonPanel.setPreferredSize(buttonPanel.getPreferredSize());
 
-		textFieldPanel.add(area);
+		JScrollPane scrollPane = new JScrollPane(area);
+		scrollPane.setBorder(BorderFactory.createEmptyBorder());
+		textFieldPanel.add(scrollPane);
 		textFieldPanel.setPreferredSize(textFieldPanel.getPreferredSize());
 
 		f.setPreferredSize(f.getPreferredSize());
