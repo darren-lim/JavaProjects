@@ -21,6 +21,7 @@ import javax.swing.JMenuItem;
 import javax.swing.JPanel;
 import javax.swing.JScrollPane;
 import javax.swing.JTextArea;
+import javax.swing.JTextField;
 import javax.swing.event.DocumentEvent;
 import javax.swing.event.DocumentListener;
 
@@ -35,6 +36,7 @@ public class PostIt {
 	public String postContent;
 	public String postFileName;
 	public String cName;
+	public String postTitle;
 
 	public FileCheckers fileChecker;
 
@@ -42,12 +44,16 @@ public class PostIt {
 	public JMenu menu;
 	public JMenuItem m1, m2, m3;
 
+	public JTextArea area;
+	public JTextField titleText;
+
 	public JFrame f;
 
 	public BorderLayout layout;
 
 	public JPanel buttonPanel;
 	public JPanel textFieldPanel;
+	public JPanel titlePanel;
 
 	public class Colors {
 		Color yellow = new Color(255, 250, 205);
@@ -56,13 +62,14 @@ public class PostIt {
 		Color grey = new Color(211, 211, 211);
 	}
 
-	public PostIt(String name, String path, String content, String colorName) {
+	public PostIt(String name, String path, String content, String colorName, String title) {
 		// Create New Frame
 		f = new JFrame("Post-It Notes");
 		postName = name;
 		postPath = path;
 		postContent = content;
 		cName = colorName;
+		postTitle = title;
 		fileChecker = new FileCheckers();
 
 		Colors color = new Colors();
@@ -76,7 +83,6 @@ public class PostIt {
 		f.setLocationRelativeTo(null);
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
 		f.addWindowListener(new WindowAdapter() {
-
 			@Override
 			public void windowClosing(WindowEvent e) {
 				onClose();
@@ -88,47 +94,31 @@ public class PostIt {
 
 		// Create a new Text Field
 		textFieldPanel = new JPanel();
-		textFieldPanel.setLayout(new CardLayout(15, 10));
+		textFieldPanel.setLayout(new CardLayout(0, 10));
 
 		// Set initial text field to the text from file
-		JTextArea area = new JTextArea(content);
+		area = new JTextArea(content);
 		fileChecker.writeFile(postPath, postName, area.getText());
 		area.setFont(new Font("Arial", Font.PLAIN, 18));
-
-		// Set Background Colors
-		if (colorName.equals("Blue")) {
-			f.getContentPane().setBackground(color.blue);
-			textFieldPanel.setBackground(color.blue);
-			area.setBackground(color.blue);
-		} else if (colorName.equals("Green")) {
-			f.getContentPane().setBackground(color.green);
-			textFieldPanel.setBackground(color.green);
-			area.setBackground(color.green);
-		} else if (colorName.equals("Grey")) {
-			f.getContentPane().setBackground(color.grey);
-			textFieldPanel.setBackground(color.grey);
-			area.setBackground(color.grey);
-		} else {
-			f.getContentPane().setBackground(color.yellow);
-			textFieldPanel.setBackground(color.yellow);
-			area.setBackground(color.yellow);
-		}
 
 		// Add listeners to document updates, write to file
 		area.getDocument().addDocumentListener(new DocumentListener() {
 			@Override
 			public void insertUpdate(DocumentEvent e) {
-				fileChecker.writeFile(postPath, postName, area.getText());
+				postContent = area.getText();
+				fileChecker.writeFile(postPath, postName, postContent);
 			}
 
 			@Override
 			public void removeUpdate(DocumentEvent e) {
-				fileChecker.writeFile(postPath, postName, area.getText());
+				postContent = area.getText();
+				fileChecker.writeFile(postPath, postName, postContent);
 			}
 
 			@Override
 			public void changedUpdate(DocumentEvent e) {
-				fileChecker.writeFile(postPath, postName, area.getText());
+				postContent = area.getText();
+				fileChecker.writeFile(postPath, postName, postContent);
 			}
 		});
 
@@ -137,6 +127,48 @@ public class PostIt {
 		scrollPane.setBorder(BorderFactory.createEmptyBorder());
 		textFieldPanel.add(scrollPane);
 		textFieldPanel.setPreferredSize(textFieldPanel.getPreferredSize());
+
+		titlePanel = new JPanel();
+		titlePanel.setLayout(new BorderLayout(10, 0));
+		titlePanel.setBorder(BorderFactory.createEmptyBorder(10, 15, 2, 15));
+
+		titleText = new JTextField(title);
+		titleText.setBorder(BorderFactory.createEmptyBorder());
+		titleText.setFont(new Font("Arial", Font.BOLD, 24));
+		titleText.getDocument().addDocumentListener(new DocumentListener() {
+			@Override
+			public void insertUpdate(DocumentEvent e) {
+				postTitle = titleText.getText();
+				writeToSetting(postPath, cName, postTitle);
+			}
+
+			@Override
+			public void removeUpdate(DocumentEvent e) {
+				postTitle = titleText.getText();
+				writeToSetting(postPath, cName, postTitle);
+			}
+
+			@Override
+			public void changedUpdate(DocumentEvent e) {
+				postTitle = titleText.getText();
+				writeToSetting(postPath, cName, postTitle);
+			}
+		});
+
+		titlePanel.add(titleText, BorderLayout.NORTH);
+		titlePanel.add(textFieldPanel, BorderLayout.CENTER);
+		titlePanel.setPreferredSize(textFieldPanel.getPreferredSize());
+
+		// Set Background Colors
+		if (colorName.equals("Blue")) {
+			setBackgroundColor(color.blue);
+		} else if (colorName.equals("Green")) {
+			setBackgroundColor(color.green);
+		} else if (colorName.equals("Grey")) {
+			setBackgroundColor(color.grey);
+		} else {
+			setBackgroundColor(color.yellow);
+		}
 
 		// Create Button Panel For Colors
 		buttonPanel = new JPanel();
@@ -155,7 +187,8 @@ public class PostIt {
 		m1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
-				PostItMain.createNewPostIt("note", path, "New Note", "Yellow", false);
+				PostItMain.createNewPostIt("note", path, PostItMain.DEFAULTTEXTAREA, PostItMain.DEFAULTCOLOR,
+						PostItMain.DEFAULTTITLE, false);
 			}
 		});
 
@@ -181,7 +214,7 @@ public class PostIt {
 
 		f.setPreferredSize(f.getPreferredSize());
 		f.add(buttonPanel, BorderLayout.NORTH);
-		f.add(textFieldPanel, BorderLayout.CENTER);
+		f.add(titlePanel, BorderLayout.CENTER);
 
 		// making the frame visible
 		f.setVisible(true);
@@ -196,10 +229,9 @@ public class PostIt {
 		yellowB.setBackground(color.yellow);
 		yellowB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				f.getContentPane().setBackground(color.yellow);
-				textFieldPanel.setBackground(color.yellow);
-				area.setBackground(color.yellow);
-				writeNewColor(postPath, "Yellow");
+				setBackgroundColor(color.yellow);
+				cName = "Yellow";
+				writeToSetting(postPath, cName, postTitle);
 			}
 		});
 
@@ -209,10 +241,9 @@ public class PostIt {
 		blueB.setBackground(color.blue);
 		blueB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				f.getContentPane().setBackground(color.blue);
-				textFieldPanel.setBackground(color.blue);
-				area.setBackground(color.blue);
-				writeNewColor(postPath, "Blue");
+				setBackgroundColor(color.blue);
+				cName = "Blue";
+				writeToSetting(postPath, cName, postTitle);
 			}
 		});
 
@@ -222,10 +253,9 @@ public class PostIt {
 		greenB.setBackground(color.green);
 		greenB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				f.getContentPane().setBackground(color.green);
-				textFieldPanel.setBackground(color.green);
-				area.setBackground(color.green);
-				writeNewColor(postPath, "Green");
+				setBackgroundColor(color.green);
+				cName = "Green";
+				writeToSetting(postPath, cName, postTitle);
 			}
 		});
 
@@ -235,10 +265,9 @@ public class PostIt {
 		greyB.setBackground(color.grey);
 		greyB.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
-				f.getContentPane().setBackground(color.grey);
-				textFieldPanel.setBackground(color.grey);
-				area.setBackground(color.grey);
-				writeNewColor(postPath, "Grey");
+				setBackgroundColor(color.grey);
+				cName = "Grey";
+				writeToSetting(postPath, cName, postTitle);
 			}
 		});
 		c.fill = GridBagConstraints.HORIZONTAL;
@@ -263,26 +292,34 @@ public class PostIt {
 		buttonPanel.add(greyB, c);
 	}
 
-	public void writeNewColor(String dir, String color) {
+	public void writeToSetting(String dir, String color, String title) {
 		String settingsContent = fileChecker.readFile(dir, SETTINGSNAME);
-		String[] colorArr = settingsContent.split("\n");
-		for (int i = 0; i < colorArr.length; i++) {
-			String[] nameAndColArr = colorArr[i].split(" ");
-			if (nameAndColArr[0].equals(postName)) {
-				nameAndColArr[1] = color;
-				String joined = String.join(" ", nameAndColArr[0], nameAndColArr[1]);
-				colorArr[i] = joined;
+		String[] lineArr = settingsContent.split("\n");
+		String newContent = "";
+		for (int i = 0; i < lineArr.length; i++) {
+			String[] lineSplit = lineArr[i].split(" ");
+			if (lineSplit[0].equals(postName)) {
+				newContent = lineSplit[0] + " " + color + " " + title;
+				lineArr[i] = newContent;
 				System.out.println("YES");
 				break;
 			}
 		}
-		String changedText = String.join("\n", colorArr);
+		String changedText = String.join("\n", lineArr);
 		System.out.println(changedText);
 		fileChecker.writeFile(dir, SETTINGSNAME, changedText);
 	}
 
 	public void onClose() {
 		PostItMain.PostItArr.remove(this);
+	}
+
+	public void setBackgroundColor(Color bgColor) {
+		f.getContentPane().setBackground(bgColor);
+		textFieldPanel.setBackground(bgColor);
+		area.setBackground(bgColor);
+		titlePanel.setBackground(bgColor);
+		titleText.setBackground(bgColor);
 	}
 
 	// public static void main(String[] args) {
