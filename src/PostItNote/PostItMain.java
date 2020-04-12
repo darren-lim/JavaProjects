@@ -18,7 +18,7 @@ public class PostItMain {
 	public class FilePaths {
 		public String PATH = "C:/";
 		public String DIRNAME = PATH + "PostItNotes/";
-		public String NAME = "note";
+		public String NAME = "note_";
 		public String EXTENSION = ".txt";
 
 		public String SETTINGSNAME = "settings.txt";
@@ -98,7 +98,9 @@ public class PostItMain {
 				PostIt stickyNote = new PostIt(noteName, dirName, content, colorName, title);
 				PostItArr.add(stickyNote);
 				String settingsStr = fc.readFile(dirName, "settings.txt");
-				fc.writeFile(dirName, "settings.txt", settingsStr + noteName + " " + colorName + " " + title + "\n");
+				String fullStr = settingsStr + "\n" + noteName + " " + colorName + " " + title;
+				System.out.println(fullStr);
+				fc.writeFile(dirName, "settings.txt", fullStr);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
@@ -110,9 +112,7 @@ public class PostItMain {
 		// the last file is settings, the last note file is the 2nd to last
 		File lastFile = files[files.length - 2];
 		String fileName = lastFile.getName();
-		String line = fc.readFile(dir, fileName);
-		String[] splitLine = line.split(" ");
-		String[] splitName = splitLine[0].split("_");
+		String[] splitName = fileName.split("[_\\.]");
 		int num = Integer.parseInt(splitName[1]);
 		return num;
 	}

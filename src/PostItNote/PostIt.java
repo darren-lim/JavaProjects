@@ -27,33 +27,32 @@ import javax.swing.event.DocumentListener;
 
 public class PostIt {
 
-	public String SETTINGSNAME = "settings.txt";
+	private String SETTINGSNAME = "settings.txt";
 
 	public PostIt stickyNote;
 
 	public String postName;
-	public String postPath;
-	public String postContent;
-	public String postFileName;
-	public String cName;
-	public String postTitle;
+	private String postPath;
+	private String postContent;
+	private String cName;
+	private String postTitle;
 
-	public FileCheckers fileChecker;
+	private FileCheckers fileChecker;
 
-	public JMenuBar mb;
-	public JMenu menu;
-	public JMenuItem m1, m2, m3;
+	private JMenuBar mb;
+	private JMenu menu, notesMenu;
+	private JMenuItem m1, m2, m3;
 
-	public JTextArea area;
-	public JTextField titleText;
+	private JTextArea area;
+	private JTextField titleText;
 
-	public JFrame f;
+	private JFrame f;
 
-	public BorderLayout layout;
+	private BorderLayout layout;
 
-	public JPanel buttonPanel;
-	public JPanel textFieldPanel;
-	public JPanel titlePanel;
+	private JPanel buttonPanel;
+	private JPanel textFieldPanel;
+	private JPanel titlePanel;
 
 	public class Colors {
 		Color yellow = new Color(255, 250, 205);
@@ -86,9 +85,6 @@ public class PostIt {
 			@Override
 			public void windowClosing(WindowEvent e) {
 				onClose();
-				if (PostItMain.PostItArr.size() == 0) {
-					f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-				}
 			}
 		});
 
@@ -182,7 +178,8 @@ public class PostIt {
 		menu = new JMenu("Menu");
 		m1 = new JMenuItem("New Note");
 		m2 = new JMenuItem("Colors");
-		// m3 = new JMenuItem("All Notes");
+		notesMenu = new JMenu("All Notes");
+		m3 = new JMenuItem("Delete Note");
 
 		m1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
@@ -202,9 +199,32 @@ public class PostIt {
 			}
 		});
 
+		m3.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				String settingString = fileChecker.readFile(postPath, SETTINGSNAME);
+				String[] lineArr = settingString.split("\n");
+				String[] newArr = new String[lineArr.length - 1];
+				int index = 0;
+				for (int i = 0; i < lineArr.length; i++) {
+					String[] lineSplit = lineArr[i].split(" ");
+					if (lineSplit[0].equals(postName)) {
+						index = 1;
+						continue;
+					}
+					newArr[i - index] = lineArr[i];
+				}
+				String changedText = String.join("\n", newArr);
+
+				fileChecker.writeFile(postPath, SETTINGSNAME, changedText);
+				fileChecker.deleteFile(postPath + postName);
+				onClose();
+			}
+		});
+
 		menu.add(m1);
 		menu.add(m2);
-		// menu.add(m3);
+		menu.add(notesMenu);
+		menu.add(m3);
 
 		mb.add(menu);
 
@@ -301,17 +321,21 @@ public class PostIt {
 			if (lineSplit[0].equals(postName)) {
 				newContent = lineSplit[0] + " " + color + " " + title;
 				lineArr[i] = newContent;
-				System.out.println("YES");
 				break;
 			}
 		}
 		String changedText = String.join("\n", lineArr);
-		System.out.println(changedText);
 		fileChecker.writeFile(dir, SETTINGSNAME, changedText);
 	}
 
 	public void onClose() {
 		PostItMain.PostItArr.remove(this);
+		if (PostItMain.PostItArr.size() == 0) {
+			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+		} else {
+			f.setVisible(false);
+			f.dispose();
+		}
 	}
 
 	public void setBackgroundColor(Color bgColor) {
@@ -320,6 +344,16 @@ public class PostIt {
 		area.setBackground(bgColor);
 		titlePanel.setBackground(bgColor);
 		titleText.setBackground(bgColor);
+	}
+
+	public String getname() {
+		return postName;
+	}
+
+	public void addAllNotes() {
+		for (int i = 0; i < PostItMain.PostItArr.size(); i++) {
+			notesMenu.add(new JMenuItem(PostItMain.PostItArr.get(i).postName));
+		}
 	}
 
 	// public static void main(String[] args) {
