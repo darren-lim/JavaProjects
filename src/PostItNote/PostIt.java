@@ -7,10 +7,10 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.Point;
+import java.awt.Toolkit;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
-import java.awt.event.WindowAdapter;
-import java.awt.event.WindowEvent;
 
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
@@ -31,7 +31,7 @@ public class PostIt {
 
 	public PostIt stickyNote;
 
-	public String postName;
+	private String postName;
 	private String postPath;
 	private String postContent;
 	private String cName;
@@ -40,8 +40,8 @@ public class PostIt {
 	private FileCheckers fileChecker;
 
 	private JMenuBar mb;
-	private JMenu menu, notesMenu;
-	private JMenuItem m1, m2, m3;
+	private JMenu menu;
+	private JMenuItem m1, m2, m3, notesMenu;
 
 	private JTextArea area;
 	private JTextField titleText;
@@ -61,7 +61,7 @@ public class PostIt {
 		Color grey = new Color(211, 211, 211);
 	}
 
-	public PostIt(String name, String path, String content, String colorName, String title) {
+	public PostIt(String name, String path, String content, String colorName, String title, int loc) {
 		// Create New Frame
 		f = new JFrame("Post-It Notes");
 		postName = name;
@@ -77,16 +77,21 @@ public class PostIt {
 		layout = new BorderLayout(0, 10);
 		f.setLayout(layout);
 
-		// set frame size and position
+		// set frame size and position 300 width and 400 height
+		// f.setPreferredSize(new Dimension(300, 400));
 		f.setSize(300, 400);// 300 width and 400 height
-		f.setLocationRelativeTo(null);
+		// f.setLocationRelativeTo(null);
+		Dimension screenSize = Toolkit.getDefaultToolkit().getScreenSize();
+		Point middle = new Point(screenSize.width / 2, screenSize.height / 2);
+		Point newLocation = new Point(middle.x - (f.getWidth() / 2) + loc, middle.y - (f.getHeight() / 2) + loc);
+		f.setLocation(newLocation);
+
 		f.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
-		f.addWindowListener(new WindowAdapter() {
-			@Override
-			public void windowClosing(WindowEvent e) {
-				onClose();
-			}
-		});
+		/*
+		 * f.addWindowListener(new WindowAdapter() {
+		 * 
+		 * @Override public void windowClosing(WindowEvent e) { onClose(false); } });
+		 */
 
 		// Create a new Text Field
 		textFieldPanel = new JPanel();
@@ -178,14 +183,14 @@ public class PostIt {
 		menu = new JMenu("Menu");
 		m1 = new JMenuItem("New Note");
 		m2 = new JMenuItem("Colors");
-		notesMenu = new JMenu("All Notes");
+		notesMenu = new JMenuItem("All Notes");
 		m3 = new JMenuItem("Delete Note");
 
 		m1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
 
 				PostItMain.createNewPostIt("note", path, PostItMain.DEFAULTTEXTAREA, PostItMain.DEFAULTCOLOR,
-						PostItMain.DEFAULTTITLE, false);
+						PostItMain.DEFAULTTITLE, false, 30);
 			}
 		});
 
@@ -195,6 +200,16 @@ public class PostIt {
 					buttonPanel.setVisible(false);
 				} else {
 					buttonPanel.setVisible(true);
+				}
+			}
+		});
+
+		notesMenu.addActionListener(new ActionListener() {
+			public void actionPerformed(ActionEvent e) {
+				if (PostItAllNotes.allNotes == null) {
+					PostItAllNotes.allNotes = new PostItAllNotes();
+				} else {
+					PostItAllNotes.allNotes.bringBack();
 				}
 			}
 		});
@@ -217,7 +232,7 @@ public class PostIt {
 
 				fileChecker.writeFile(postPath, SETTINGSNAME, changedText);
 				fileChecker.deleteFile(postPath + postName);
-				onClose();
+				onClose(true);
 			}
 		});
 
@@ -328,14 +343,21 @@ public class PostIt {
 		fileChecker.writeFile(dir, SETTINGSNAME, changedText);
 	}
 
-	public void onClose() {
-		PostItMain.PostItArr.remove(this);
-		if (PostItMain.PostItArr.size() == 0) {
-			f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-		} else {
-			f.setVisible(false);
-			f.dispose();
+	public void onClose(boolean isDelete) {
+		if (isDelete) {
+			PostItMain.PostItArr.remove(this);
+			if (PostItAllNotes.allNotes != null) {
+				PostItAllNotes.allNotes.repaint();
+			}
 		}
+		f.setVisible(false);
+		f.dispose();
+		/*
+		 * // PostItMain.PostItArr.remove(this); if (PostItMain.PostItArr.size() == 1) {
+		 * PostItMain.PostItArr.remove(this);
+		 * f.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE); } else {
+		 * f.setVisible(false); f.dispose(); }
+		 */
 	}
 
 	public void setBackgroundColor(Color bgColor) {
@@ -346,8 +368,34 @@ public class PostIt {
 		titleText.setBackground(bgColor);
 	}
 
+	/*
+	 * private String postName; private String postPath; private String postContent;
+	 * private String cName; private String postTitle;
+	 */
+
 	public String getname() {
 		return postName;
+	}
+
+	public String getpath() {
+		return postPath;
+	}
+
+	public String getcontent() {
+		return postContent;
+	}
+
+	public String getcolor() {
+		return cName;
+	}
+
+	public String gettitle() {
+		return postTitle;
+	}
+
+	public void bringBack() {
+		f.setVisible(true);
+		f.toFront();
 	}
 
 	public void addAllNotes() {

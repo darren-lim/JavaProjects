@@ -34,6 +34,7 @@ public class PostItMain {
 				// if no files in dir
 				if (files.length == 0) {
 					newPostMain(names.NAME, names.EXTENSION, names.DIRNAME, names.SETTINGSNAME);
+					return;
 					// else if there are files in dir
 				} else {
 					String[] lineArr = {};
@@ -43,23 +44,32 @@ public class PostItMain {
 					if (fc.checkFileExists(names.DIRNAME, names.SETTINGSNAME)) {
 						String colors = fc.readFile(names.DIRNAME, names.SETTINGSNAME);
 						lineArr = colors.split("\n");
-					}
-					for (File file : files) {
-						String fileName = file.getName();
-						if (fileName.equals(names.SETTINGSNAME)) {
-							continue;
+						if (colors == "") {
+							newPostMain(names.NAME, names.EXTENSION, names.DIRNAME, names.SETTINGSNAME);
+							return;
 						}
-						for (String colorOfPost : lineArr) {
-							String[] splitLine = colorOfPost.split(" ");
-							if (splitLine[0].equals(fileName)) {
-								colorName = splitLine[1];
-								titleText = splitLine[2];
-								break;
+						int locationOffset = 0;
+						for (File file : files) {
+							String fileName = file.getName();
+							if (fileName.equals(names.SETTINGSNAME) && files.length > 1) {
+								continue;
 							}
+							for (String colorOfPost : lineArr) {
+								String[] splitLine = colorOfPost.split(" ");
+								if (splitLine[0].equals(fileName)) {
+									colorName = splitLine[1];
+									titleText = splitLine[2];
+									break;
+								}
+							}
+							fileContent = fc.readFile(names.DIRNAME, fileName);
+							if (fileContent == "")
+								fileContent = DEFAULTTEXTAREA;
+							createNewPostIt(fileName, names.DIRNAME, fileContent, colorName, titleText, true,
+									locationOffset);
+							locationOffset += 30;
+							// PostIt stickyNote = new PostIt(fileName, names.DIRNAME, fileContent, count);
 						}
-						fileContent = fc.readFile(names.DIRNAME, fileName);
-						createNewPostIt(fileName, names.DIRNAME, fileContent, colorName, titleText, true);
-						// PostIt stickyNote = new PostIt(fileName, names.DIRNAME, fileContent, count);
 					}
 				}
 				// else dir does not exist, create a new file
@@ -68,6 +78,7 @@ public class PostItMain {
 			}
 		} catch (IOException e1) {
 			e1.printStackTrace();
+			// fc.writeFile(names.DIRNAME, names.SETTINGSNAME, "");
 		}
 	}
 
@@ -76,7 +87,7 @@ public class PostItMain {
 		try {
 			fc.checkFileExists(dir, newName);
 			fc.checkFileExists(dir, settingName);
-			createNewPostIt(newName, dir, DEFAULTTEXTAREA, DEFAULTCOLOR, DEFAULTTITLE, true);
+			createNewPostIt(newName, dir, DEFAULTTEXTAREA, DEFAULTCOLOR, DEFAULTTITLE, true, 0);
 			fc.writeFile(dir, settingName, newName + " " + DEFAULTCOLOR + " " + DEFAULTTITLE + "\n");
 		} catch (IOException e) {
 			e.printStackTrace();
@@ -84,10 +95,10 @@ public class PostItMain {
 	}
 
 	public static void createNewPostIt(String newName, String dirName, String content, String colorName, String title,
-			boolean start) {
+			boolean start, int location) {
 		// -1 is on start of program
 		if (start) {
-			PostIt stickyNote = new PostIt(newName, dirName, content, colorName, title);
+			PostIt stickyNote = new PostIt(newName, dirName, content, colorName, title, location);
 			PostItArr.add(stickyNote);
 		} else {
 			// created by new note function
@@ -95,15 +106,17 @@ public class PostItMain {
 			String noteName = newName + "_" + Integer.toString(lastNum + 1) + ".txt";
 			try {
 				fc.checkFileExists(dirName, noteName);
-				PostIt stickyNote = new PostIt(noteName, dirName, content, colorName, title);
+				PostIt stickyNote = new PostIt(noteName, dirName, content, colorName, title, location);
 				PostItArr.add(stickyNote);
 				String settingsStr = fc.readFile(dirName, "settings.txt");
 				String fullStr = settingsStr + "\n" + noteName + " " + colorName + " " + title;
-				System.out.println(fullStr);
 				fc.writeFile(dirName, "settings.txt", fullStr);
 			} catch (IOException e) {
 				e.printStackTrace();
 			}
+		}
+		if (PostItAllNotes.allNotes != null) {
+			PostItAllNotes.allNotes.repaint();
 		}
 	}
 
@@ -123,10 +136,8 @@ public class PostItMain {
 }
 
 /**
- * Title -> note_1.txt yellow "Title" deleting: delete note with the title ex.
- * note1: groceries, note2: games delete groceries note2: games create new note:
- * takes most recent note and keeps going higher ex. note1, note2, note 4,
- * note10 -> will make note 11
  * 
+ * all notes -> another window that shows all the notes the user has by title.
+ * clicking button would show the window.
  * 
  */
