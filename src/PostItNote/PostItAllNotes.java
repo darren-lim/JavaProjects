@@ -1,6 +1,7 @@
 package PostItNote;
 
 import java.awt.BorderLayout;
+import java.awt.Color;
 import java.awt.Dimension;
 import java.awt.event.ActionEvent;
 import java.awt.event.ActionListener;
@@ -9,6 +10,7 @@ import java.awt.event.WindowEvent;
 import java.util.HashMap;
 
 import javax.swing.BorderFactory;
+import javax.swing.Box;
 import javax.swing.BoxLayout;
 import javax.swing.JButton;
 import javax.swing.JFrame;
@@ -27,12 +29,12 @@ public class PostItAllNotes implements ActionListener {
 	private HashMap<String, PostIt> buttonMap = new HashMap<>();
 
 	public PostItAllNotes() {
-		// System.out.println("Create all notes");
 		frame = new JFrame("All Notes");
 
 		layout = new BorderLayout();
 		frame.setSize(300, 400);
 		frame.setLayout(layout);
+		frame.setBackground(Color.white);
 		frame.setPreferredSize(new Dimension(300, 400));
 		frame.setLocationRelativeTo(null);
 		frame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
@@ -43,18 +45,7 @@ public class PostItAllNotes implements ActionListener {
 			}
 		});
 
-		listPanel = new JPanel();
-		listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
-
-		JScrollPane listScroller = new JScrollPane(listPanel);
-		listScroller.setBorder(BorderFactory.createEmptyBorder());
-		listPanel.setPreferredSize(listPanel.getPreferredSize());
-
-		addButtons();
-		// listPanel.setAlignmentX(Component.CENTER_ALIGNMENT);
-		// frame.add(listPanel, BorderLayout.CENTER);
-		frame.add(listPanel, BorderLayout.CENTER);
-		frame.setVisible(true);
+		repaint();
 	}
 
 	public void actionPerformed(ActionEvent e) {
@@ -71,13 +62,16 @@ public class PostItAllNotes implements ActionListener {
 	public void repaint() {
 		frame.getContentPane().removeAll();
 		listPanel = new JPanel();
-		listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.Y_AXIS));
+		listPanel.setLayout(new BoxLayout(listPanel, BoxLayout.PAGE_AXIS));
+
+		addButtons();
 
 		JScrollPane listScroller = new JScrollPane(listPanel);
 		listScroller.setBorder(BorderFactory.createEmptyBorder());
 		listPanel.setPreferredSize(listPanel.getPreferredSize());
 
-		addButtons();
+		listScroller.setBackground(Color.white);
+		listPanel.setBackground(Color.white);
 
 		frame.add(listPanel, BorderLayout.CENTER);
 		frame.setVisible(false);
@@ -87,7 +81,7 @@ public class PostItAllNotes implements ActionListener {
 	public void addButtons() {
 		for (int i = 0; i < PostItMain.PostItArr.size(); i++) {
 			JPanel panel = new JPanel(new BorderLayout());
-			panel.setBorder(BorderFactory.createEmptyBorder(15, 15, 15, 15));
+			panel.setPreferredSize(new Dimension(600, 100));
 			String title = PostItMain.PostItArr.get(i).gettitle();
 			if (buttonMap.get(title) != null) {
 				title = title + "(" + Integer.toString(i) + ")";
@@ -95,10 +89,14 @@ public class PostItAllNotes implements ActionListener {
 			JButton button = new JButton(title);
 			buttonMap.put(title, PostItMain.PostItArr.get(i));
 			button.addActionListener(this);
+			// button.setMaximumSize(new Dimension(Integer.MAX_VALUE,
+			// button.getMinimumSize().height + 10));
+			// button.setPreferredSize(new Dimension(10, 0));
+			button.setBorder(BorderFactory.createRaisedSoftBevelBorder());
 			panel.add(button);
+			listPanel.add(Box.createRigidArea(new Dimension(0, 5)));
 			listPanel.add(panel);
 		}
-		System.out.println("add");
 	}
 
 }

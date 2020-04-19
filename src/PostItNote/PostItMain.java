@@ -1,9 +1,13 @@
 package PostItNote;
 
+// import de.javasoft.plaf.synthetica.SyntheticaBlackEyeLookAndFeel;
+
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
+
+import javax.swing.UIManager;
 
 public class PostItMain {
 
@@ -17,15 +21,34 @@ public class PostItMain {
 
 	public class FilePaths {
 		public String PATH = "C:/";
-		public String DIRNAME = PATH + "PostItNotes/";
+		public String DIRNAME = PATH + "\\PostItNotes\\";
 		public String NAME = "note_";
 		public String EXTENSION = ".txt";
 
 		public String SETTINGSNAME = "settings.txt";
+
+		public FilePaths() {
+			PATH = System.getProperty("user.dir");
+			DIRNAME = PATH + "\\PostItNotes\\";
+		}
 	}
 
 	public static void main(String[] args) {
 		PostItMain.FilePaths names = new PostItMain().new FilePaths();
+		/*
+		 * try { for (LookAndFeelInfo info : UIManager.getInstalledLookAndFeels()) { if
+		 * ("Nimbus".equals(info.getName())) {
+		 * UIManager.setLookAndFeel(info.getClassName()); break; } } } catch (Exception
+		 * e) { // If Nimbus is not available, you can set the GUI to another look and
+		 * feel. System.err.println("Look and feel not set."); }
+		 */
+		try {
+			UIManager.setLookAndFeel(UIManager.getCrossPlatformLookAndFeelClassName());
+		} catch (Exception e) {
+			// If Nimbus is not available, you can set the GUI to another look and feel.
+			System.err.println("Look and feel not set.");
+		}
+
 		// later on check multiple files in directory
 		try {
 			// if dir exists
@@ -76,6 +99,7 @@ public class PostItMain {
 			} else {
 				newPostMain(names.NAME, names.EXTENSION, names.DIRNAME, names.SETTINGSNAME);
 			}
+
 		} catch (IOException e1) {
 			e1.printStackTrace();
 			// fc.writeFile(names.DIRNAME, names.SETTINGSNAME, "");
@@ -104,6 +128,7 @@ public class PostItMain {
 			// created by new note function
 			int lastNum = getLastNoteNum(dirName);
 			String noteName = newName + "_" + Integer.toString(lastNum + 1) + ".txt";
+			System.out.println(noteName);
 			try {
 				fc.checkFileExists(dirName, noteName);
 				PostIt stickyNote = new PostIt(noteName, dirName, content, colorName, title, location);
@@ -122,12 +147,18 @@ public class PostItMain {
 
 	public static int getLastNoteNum(String dir) {
 		File[] files = fc.getFileList(dir);
+		int max = 1;
+		int num = 1;
+		for (int i = 0; i < files.length - 1; i++) {
+			String fileName = files[i].getName();
+			String[] splitName = fileName.split("[_\\.]");
+			num = Integer.parseInt(splitName[1]);
+			if (num > max) {
+				max = num;
+			}
+		}
 		// the last file is settings, the last note file is the 2nd to last
-		File lastFile = files[files.length - 2];
-		String fileName = lastFile.getName();
-		String[] splitName = fileName.split("[_\\.]");
-		int num = Integer.parseInt(splitName[1]);
-		return num;
+		return max;
 	}
 
 	public static void closePost(PostIt post) {

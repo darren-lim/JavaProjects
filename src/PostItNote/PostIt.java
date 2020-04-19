@@ -96,9 +96,11 @@ public class PostIt {
 		// Create a new Text Field
 		textFieldPanel = new JPanel();
 		textFieldPanel.setLayout(new CardLayout(0, 10));
+		textFieldPanel.setBorder(BorderFactory.createEmptyBorder());
 
 		// Set initial text field to the text from file
 		area = new JTextArea(content);
+		area.setBorder(BorderFactory.createEmptyBorder());
 		fileChecker.writeFile(postPath, postName, area.getText());
 		area.setFont(new Font("Arial", Font.PLAIN, 18));
 
@@ -185,6 +187,7 @@ public class PostIt {
 		m2 = new JMenuItem("Colors");
 		notesMenu = new JMenuItem("All Notes");
 		m3 = new JMenuItem("Delete Note");
+		m3.setBackground(Color.red.brighter().brighter());
 
 		m1.addActionListener(new ActionListener() {
 			public void actionPerformed(ActionEvent e) {
