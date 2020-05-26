@@ -5,9 +5,11 @@ import java.net.http.HttpClient;
 import java.net.http.HttpRequest;
 import java.net.http.HttpResponse;
 import java.net.http.HttpResponse.BodyHandlers;
+import java.text.DecimalFormat;
 import java.time.Duration;
-import java.util.Scanner;
+import java.util.Iterator;
 
+import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
 import org.json.simple.parser.JSONParser;
 
@@ -23,15 +25,15 @@ import org.json.simple.parser.JSONParser;
 public class WeatherMain {
 	public static void main(String[] args) {
 		// TODO Auto-generated method stub
-		Scanner in = new Scanner(System.in);
-		System.out.println("Please Enter a Zip Code: ");
-		String zip = in.nextLine();
-		System.out.println("Please Enter a Country Code: ");
-		String country = in.nextLine();
-		in.close();
+		// Scanner in = new Scanner(System.in);
+		// System.out.println("Please Enter a Zip Code: ");
+		// String zip = in.nextLine();
+		// System.out.println("Please Enter a Country Code: ");
+		// String country = in.nextLine();
+		// in.close();
 		String urlStr = String.format(
 				"https://api.openweathermap.org/data/2.5/weather?zip=%1$s,%2$s&appid=fcc09851b4b997771590a96ef181f737",
-				zip, country);
+				"90703", "US");
 
 		HttpClient client = HttpClient.newHttpClient();
 		try {
@@ -43,16 +45,33 @@ public class WeatherMain {
 			JSONObject obj = (JSONObject) parser.parse(response.body());
 
 			printWeatherReport(obj);
-			System.out.println(obj);
 		} catch (Exception e) {
 			System.out.println(e);
 		}
 	}
 
 	public static void printWeatherReport(JSONObject json) {
-		JSONObject weather = (JSONObject) json.get("main");
-		System.out.println("Today's Weather Report:");
-		System.out.println(weather.get("description"));
+		String city = (String) json.get("name");
+		System.out.println("Current Weather Report for the city of " + city);
+
+		System.out.println(city + " coordinates:");
+		JSONObject coords = (JSONObject) json.get("coord");
+
+		System.out.println("    lon: " + coords.get("lon"));
+		System.out.println("    lat: " + coords.get("lat"));
+		System.out.println();
+
+		JSONObject main = (JSONObject) json.get("main");
+		DecimalFormat formatter = new DecimalFormat("#0.00");
+		double temp = (Double) main.get("temp") * (9.0 / 5.0) - 459.67;
+		System.out.println(formatter.format(temp) + " degrees F");
+
+		System.out.println("humidity of " + main.get("humidity"));
+
+		JSONArray weatherArr = (JSONArray) json.get("weather");
+		Iterator<JSONObject> iterator = weatherArr.iterator();
+		if (iterator.hasNext())
+			System.out.println(iterator.next().get("description"));
 	}
 }
 // {"visibility":16093,"timezone":-25200,"main":{"temp":291.87,"temp_min":289.82,"humidity":60,
