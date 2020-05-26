@@ -8,6 +8,7 @@ import java.net.http.HttpResponse.BodyHandlers;
 import java.text.DecimalFormat;
 import java.time.Duration;
 import java.util.Iterator;
+import java.util.Scanner;
 
 import org.json.simple.JSONArray;
 import org.json.simple.JSONObject;
@@ -24,16 +25,15 @@ import org.json.simple.parser.JSONParser;
 
 public class WeatherMain {
 	public static void main(String[] args) {
-		// TODO Auto-generated method stub
-		// Scanner in = new Scanner(System.in);
-		// System.out.println("Please Enter a Zip Code: ");
-		// String zip = in.nextLine();
-		// System.out.println("Please Enter a Country Code: ");
-		// String country = in.nextLine();
-		// in.close();
+		Scanner in = new Scanner(System.in);
+		System.out.println("Please Enter a Zip Code: ");
+		String zip = in.nextLine();
+		System.out.println("Please Enter a Country Code: ");
+		String country = in.nextLine();
+		in.close();
 		String urlStr = String.format(
 				"https://api.openweathermap.org/data/2.5/weather?zip=%1$s,%2$s&appid=fcc09851b4b997771590a96ef181f737",
-				"90703", "US");
+				zip, country);
 
 		HttpClient client = HttpClient.newHttpClient();
 		try {
@@ -52,6 +52,10 @@ public class WeatherMain {
 
 	public static void printWeatherReport(JSONObject json) {
 		String city = (String) json.get("name");
+		if (city == null) {
+			System.out.println("Zip or Country does not exist");
+			return;
+		}
 		System.out.println("Current Weather Report for the city of " + city);
 
 		System.out.println(city + " coordinates:");
@@ -71,7 +75,7 @@ public class WeatherMain {
 		JSONArray weatherArr = (JSONArray) json.get("weather");
 		Iterator<JSONObject> iterator = weatherArr.iterator();
 		if (iterator.hasNext())
-			System.out.println(iterator.next().get("description"));
+			System.out.println("Outdoor description: " + iterator.next().get("description"));
 	}
 }
 // {"visibility":16093,"timezone":-25200,"main":{"temp":291.87,"temp_min":289.82,"humidity":60,
